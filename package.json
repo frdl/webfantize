@@ -1,0 +1,29 @@
+{
+  "name": "@frdl/webfantize",
+  "version": "0.0.1",
+  "repository": "git://github.com/frdl/webfantize.git",
+  "description": "Sanitize a project and make it webfan/frdlweb compliant",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [
+    "frdl.js",
+    "@frdl",
+    "webfantize",
+    "sanitize",
+    "project"
+  ],
+  "dependencies" : {
+	"@frdl/functions" : "latest",
+	"@frdl/simple-downloader" : "latest",
+	"@frdl/helper" : "latest",
+    "@frdl/eventemitter": "latest"
+  },
+  "devDependencies" : {
+	 
+  },
+  "publishConfig": {
+	  "registry": "https://npm.pkg.github.com/"
+  },
+  "author": "Till Wehowski",
+  "license": "MIT"
+}
