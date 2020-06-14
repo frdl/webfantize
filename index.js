@@ -1,5 +1,7 @@
 'use strict';
 
+  const API_DISCOVER_URL = 'https://discover.api.webfan.de/.well-known/frdlweb.json';
+
  const FrdlFrameworkAspectsOID = '1.3.6.1.4.1.37553.8.1.8.8.11';
 
 
@@ -29,14 +31,12 @@
 
     var helperReady = require("@frdl/helper")(frdl, emitter);
 
+     var is = require("@frdl/var-typing");
 
-/*
-webfantize(flavor, pkg)
-getAttachmentDownloadUrl(identifier, filename)
-getAspectItem(name)
-getOid(OID)
-*/
-exports = module.exports = {
+
+
+var api = {
+	is : is,
 	webfantize : webfantize,
 	oid : {
 	   getAttachmentDownloadUrl : getAttachmentDownloadUrl,
@@ -46,11 +46,34 @@ exports = module.exports = {
 	}
 };
 
+exports = module.exports = api;
+
+
+ 
+
+function getApiDiscoverDocument(){
+ return new Promise(function(resolve,reject){	
+		
+		if(api.is.undefined(api.meta) || api.is.null(api.meta) ){			
+			download(API_DISCOVER_URL)			   
+				.then(function(meta){				
+			       api.meta = meta;
+				   resolve(api.meta);
+			}).catch(function(e){
+							 console.error(e);
+							 reject(e);
+						 });
+		}else{
+			resolve(api.meta);
+		}
+ 
+ });	
+}
 
 
       function getOidWhoisUrl(OID){
 			 return new Promise(function(resolve,reject){
-					Promise.all([helperReady, download('https://discover.api.webfan.de/.well-known/frdlweb.json')])
+					Promise.all([helperReady, getApiDiscoverDocument()])
 	                      .then(function(data){
                              resolve(frdl.templater(data[1].repository.oid[0].url, {
 							    query : OID
@@ -64,21 +87,41 @@ exports = module.exports = {
 	  }
 
 
+
+
+
+
       function getOid(OID){
         
 
-				 return new Promise(function(resolve,reject){
-					download('https://look-up.webfan3.de/plugins/publicPages/100_whois/whois/webwhois.php?format=json&query=oid%3A' + OID)
+	
+		
+		  return new Promise(function(resolve,reject){
+					 
+			
+			  getOidWhoisUrl(OID) 
+				 .then(function(url){	 
+					download(url)
 	                      .then(function(data){
                              resolve(data);
 							
 						  }).catch(function(e){
 							 console.error(e);
 							 reject(e);
+						 });					   
+				 }).catch(function(e){
+							 console.error(e);
+							 reject(e);
 						 });
-					   });
+				
+		  });
    }
-				   
+				  
+
+
+
+
+
 				   
 function getAspectItem(name){
 
@@ -112,7 +155,12 @@ function getAttachmentDownloadUrl(identifier, filename){
 
  return new Promise(function(resolve,reject){
 
-  getAspectItem(identifier).then(function(oid){
+	 var promise = (is.oid.format(identifier) )
+	          ? getOid(OID)
+		      : getAspectItem(identifier);
+	 
+	 
+  promise.then(function(oid){
 
  	    if(frdl.is.undefined(oid.whois[1]["attachment-name"])){
                  oid.whois[1]["attachment-name"] = [];
